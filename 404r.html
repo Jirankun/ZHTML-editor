@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error - Editor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Fira Code', monospace;
+    }
+
+    body {
+      background: #1e1f29;
+      color: #f8f8f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .error-card {
+      background: #282a36;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      border: 1px solid #44475a;
+    }
+
+    .icon-error {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      fill: #ff5555;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #ff6e6e;
+    }
+
+    p {
+      font-size: 15px;      line-height: 1.6;
+      color: #f8f8f2;
+      margin-bottom: 24px;
+    }
+
+    .btn-whatsapp {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #2d3748;
+      color: #4ade80;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.2s, transform 0.1s;
+      border: 1px solid #44475a;
+    }
+
+    .btn-whatsapp:hover {
+      background: #3a4558;
+      transform: translateY(-2px);
+    }
+
+    .btn-whatsapp:active {
+      transform: translateY(0);
+    }
+
+    .icon-whatsapp {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="error-card">
+    <!-- Ikon Error (SVG Offline) -->
+    <svg class="icon-error" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+    </svg>
+
+    <h2>Terjadi Masalah pada Editor</h2>
+
+    <p>
+      Silakan keluar aplikasi dan buka kembali.<br>
+      Jika pemberitahuan ini masih muncul, silakan lapor ke developer.
+    </p>
+    <!-- Tombol WhatsApp (SVG + Link) -->
+    <a href="https://wa.me/6285165721384" target="_blank" class="btn-whatsapp">
+      <svg class="icon-whatsapp" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.247-.595-.497-1.015-.695-1.015-.198 0-.371.149-.52.149-.149 0-.298-.074-.446-.074-.149 0-.396.198-.594.396-.198.198-.768 1.255-.768 2.472 0 1.217.644 2.41 1.48 3.246 1.182 1.182 2.364 1.578 2.76 1.727.396.149.843.124 1.165.075.322-.05 1.015-.422 1.164-.843.149-.421.149-.768.1-.867-.05-.099-.173-.173-.322-.248z"/>
+        <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/>
+      </svg>
+      Laporkan
+    </a>
+  </div>
+
+</body>
+</html>
