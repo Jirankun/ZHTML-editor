@@ -1,237 +1,106 @@
-// ┌──────────────────────────────┐
-// │ INISIALISASI EDITOR          │
-// └──────────────────────────────┘
-const textarea = document.getElementById("editor");
-let editor = CodeMirror.fromTextArea(textarea, {
-  lineNumbers: true,
-  theme: "dracula",
-  mode: "htmlmixed",
-  autoCloseBrackets: true,
-  autoCloseTags: true,
-  matchBrackets: true,
-  tabSize: 2,
-  indentUnit: 2
-});
-editor.focus();
+// Script untuk menangani auto-refresh preview dan modal link eksternal
 
-// ┌──────────────────────────────┐
-// │ FITUR INGAT & SIMPAN         │
-// └──────────────────────────────┘
-(function loadSavedData() {
-  const savedContent = localStorage.getItem('editorContent');
-  const savedMode = localStorage.getItem('editorMode') || 'htmlmixed';
-  
-  if (savedContent !== null) {
-    editor.setValue(savedContent);
-  }
-  editor.setOption('mode', savedMode);
-})();
-
-editor.on("change", function() {
-  localStorage.setItem('editorContent', editor.getValue());
-});
-
-function saveCurrentMode(mode) {
-  localStorage.setItem('editorMode', mode);
-}
-
-// ┌──────────────────────────────┐
-// │ FUNGSI HAPUS SEMUA DATA      │
-// └──────────────────────────────┘
-function clearAllSavedData() {
-  // Hapus dari localStorage
-  localStorage.removeItem('editorContent');
-  localStorage.removeItem('editorMode');
-  localStorage.removeItem('splitViewState');
-
-  // Jika SQLite tersedia (Cordova), hapus data di database
-  if (window.cordova && window.sqlitePlugin) {
-    document.addEventListener('deviceready', function() {
-      const db = window.sqlitePlugin.openDatabase({ name: 'editor_data.db', location: 'default' });      db.transaction(function(tx) {
-        tx.executeSql('DELETE FROM settings', [], () => {
-          console.log('Data SQLite dihapus.');
-        }, (tx, err) => {
-          console.error('Gagal hapus data SQLite:', err);
-        });
-      });
-    }, false);
-  }
-
-  // Kosongkan editor dan reset mode
-  editor.setValue('');
-  editor.setOption('mode', 'htmlmixed');
-  editor.focus();
-
-  // Opsional: tampilkan notifikasi
-  alert("Semua data tersimpan telah dihapus. Editor dikosongkan.");
-}
-
-// ┌──────────────────────────────┐
-// │ EKSTRAK JUDUL                │
-// └──────────────────────────────┘
-function extractTitleFromHTML(html) {
-  const parser = new DOMParser();
-  try {
-    const doc = parser.parseFromString(html, "text/html");
-    const titleEl = doc.querySelector("title");
-    return titleEl ? titleEl.textContent.trim() : "Tanpa Judul";
-  } catch (e) {
-    return "Tidak Valid";
-  }
-}
-
-// ┌──────────────────────────────┐
-// │ UPDATE SEMUA PREVIEW + JUDUL │
-// └──────────────────────────────┘
-function updateAllPreviews() {
-  const code = editor.getValue();
-  const title = extractTitleFromHTML(code);
-  
-  document.getElementById("previewFrame").srcdoc = code || "<h2 align='center'>Isi kode terlebih dahulu.</h2>";
-  document.getElementById("liveFrame").srcdoc = code || "<h2 align='center'>Tulis kode HTML untuk melihat pratinjau langsung.</h2>";
-  
-  if (document.getElementById("modalPreview").style.display === "flex") {
-    document.getElementById("previewTitle").textContent = `Pratinjau : ${title}`;
-  }
-  
-  if (document.getElementById("split-layout").style.display === "flex") {
-    document.getElementById("splitPreviewTitle").textContent = `Pratinjau : ${title}`;
-  }}
-editor.on("change", updateAllPreviews);
-
-// ┌──────────────────────────────┐
-// │ FAB & MODAL                  │
-// └──────────────────────────────┘
-const fab = document.getElementById("fab");
-fab.querySelector(".main").addEventListener("click", (e) => {
-  e.stopPropagation();
-  fab.classList.toggle("open");
-});
-
-document.addEventListener("click", (e) => {
-  if (!fab.contains(e.target)) fab.classList.remove("open");
-});
-
-// ┌──────────────────────────────┐
-// │ SALIN                        │
-// └──────────────────────────────┘
-function showCopyNotification() {
-  const notif = document.getElementById("copyNotification");
-  notif.classList.remove("hide");
-  notif.classList.add("show");
-  setTimeout(() => {
-    notif.classList.remove("show");
-    notif.classList.add("hide");
-  }, 2000);
-  setTimeout(() => notif.classList.remove("hide"), 2500);
-}
-
-document.getElementById("fabCopy").addEventListener("click", () => {
-  navigator.clipboard.writeText(editor.getValue()).then(() => {
-    showCopyNotification();
-    fab.classList.remove("open");
-  }).catch(() => alert("Gagal menyalin."));
-});
-
-// ┌──────────────────────────────┐
-// │ HAPUS SEMUA (FAB)            │
-// └──────────────────────────────┘
-const fabClearBtn = document.getElementById("fabClear");
-if (fabClearBtn) {
-  fabClearBtn.addEventListener("click", () => {
-    if (confirm("Hapus semua data tersimpan? Ini akan mengosongkan editor dan menghapus riwayat penyimpanan.")) {
-      clearAllSavedData();
-    }
-    fab.classList.remove("open");
-  });
-}
-// ┌──────────────────────────────┐
-// │ PRATINJAU MODAL DENGAN FADE-IN │
-// └──────────────────────────────┘
-document.getElementById("fabPreview").addEventListener("click", () => {
-  const code = editor.getValue();
-  const title = extractTitleFromHTML(code);
-  document.getElementById("previewTitle").textContent = `Pratinjau : ${title}`;
+// Auto-refresh preview saat halaman dimuat atau user kembali
+document.addEventListener('DOMContentLoaded', function() {
+  // Update preview saat load
   updateAllPreviews();
 
-  const modal = document.getElementById("modalPreview");
-  modal.style.display = "flex";
-  modal.style.opacity = "0";
-  void modal.offsetWidth;
-  modal.style.opacity = "1";
-  modal.classList.add("fade-in-active");
-
-  fab.classList.remove("open");
-});
-
-// ┌──────────────────────────────┐
-// │ MODE SPLIT DENGAN ANIMASI    │
-// └──────────────────────────────┘
-document.getElementById("splitViewBtn").addEventListener("click", () => {
-  const modalPreview = document.getElementById("modalPreview");
-  
-  modalPreview.classList.add("modal-fade-out");
-  
-  setTimeout(() => {
-    modalPreview.style.display = "none";
-    modalPreview.classList.remove("modal-fade-out");
-
-    const editorContainer = document.querySelector(".CodeMirror");
-    document.getElementById("editor-split-container").appendChild(editorContainer);
-
-    const code = editor.getValue();
-    const title = extractTitleFromHTML(code);
-    document.getElementById("splitPreviewTitle").textContent = `Pratinjau : ${title}`;
-
-    document.getElementById("default-layout").style.display = "none";
-    const splitLayout = document.getElementById("split-layout");
-    splitLayout.style.display = "flex";
-    void splitLayout.offsetWidth;
-    splitLayout.classList.add("active");
-  }, 300);
-});
-
-// ┌──────────────────────────────┐
-// │ TUTUP MODE SPLIT             │
-// └──────────────────────────────┘
-document.getElementById("closeSplitBtn").addEventListener("click", () => {  const splitLayout = document.getElementById("split-layout");
-  splitLayout.classList.remove("active");
-
-  setTimeout(() => {
-    const editorContainer = document.querySelector(".CodeMirror");
-    document.getElementById("editor-container").appendChild(editorContainer);
-
-    splitLayout.style.display = "none";
-    document.getElementById("default-layout").style.display = "flex";
-
-    editor.focus();
-  }, 400);
-});
-
-// ┌──────────────────────────────┐
-// │ MODAL TIPS                   │
-// └──────────────────────────────┘
-document.getElementById("fabTips").addEventListener("click", () => {
-  document.getElementById("modalTips").style.display = "flex";
-  fab.classList.remove("open");
-});
-
-// ┌──────────────────────────────┐
-// │ TUTUP MODAL                  │
-// └──────────────────────────────┘
-["Tips", "Preview"].forEach(name => {
-  const closeBtn = document.getElementById(`close${name}`);
-  const modal = document.getElementById(`modal${name}`);
-
-  closeBtn.onclick = () => {
-    modal.classList.remove("fade-in-active");
-    modal.style.display = "none";
-  };
-
-  modal.onclick = (e) => {
-    if (e.target === modal) {
-      modal.classList.remove("fade-in-active");
-      modal.style.display = "none";
+  // Update preview saat visibility change (user kembali ke tab)
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      updateAllPreviews();
     }
-  };
+  });
+
+  // Tangani link di modal tips untuk membuka modal link eksternal
+  const modalTips = document.getElementById('modalTips');
+  if (modalTips) {
+    modalTips.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (link && link.href) {
+        e.preventDefault();
+        // Tutup modal tips
+        modalTips.classList.remove("fade-in-active");
+        modalTips.style.display = 'none';
+        // Buka modal link eksternal dengan URL yang diklik
+        const linkModal = document.getElementById('linkModal');
+        const externalFrame = document.getElementById('externalFrame');
+        linkModal.style.display = 'flex';
+        // Set timeout kecil untuk memastikan modal muncul
+        setTimeout(() => {
+          externalFrame.src = link.href;
+        }, 100);
+      }
+    });
+  }
+});
+
+// Fungsi untuk membuka modal developer dengan URL tertentu
+function openDeveloperModal(url) {
+  const developerModal = document.getElementById('developerModal');
+  const developerFrame = document.getElementById('developerFrame');
+
+  if (url) {
+    developerFrame.src = url;
+  } else {
+    developerFrame.src = 'dev.html'; // Fallback
+  }
+
+  developerModal.style.display = 'flex';
+}
+
+// Tangani pesan dari iframe untuk membuka link di modal
+window.addEventListener('message', function(event) {
+  if (event.data.type === 'openLinkModal') {
+    const url = event.data.url;
+    const source = event.data.source;
+
+    if (source === 'preview') {
+      // Buka modal link eksternal
+      const linkModal = document.getElementById('linkModal');
+      const externalFrame = document.getElementById('externalFrame');
+
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
+        linkModal.style.display = 'flex';
+        setTimeout(() => {
+          externalFrame.src = url;
+        }, 100);
+      } else {
+        // Untuk link relatif, mungkin tampilkan pesan error
+        alert('Link tidak valid atau tidak didukung.');
+      }
+    }
+  }
+});
+
+// Tutup modal link saat klik close
+document.getElementById('closeLinkModal').addEventListener('click', function() {
+  const linkModal = document.getElementById('linkModal');
+  const externalFrame = document.getElementById('externalFrame');
+  linkModal.style.display = 'none';
+  externalFrame.src = 'about:blank'; // Clear iframe
+});
+
+// Tutup modal link saat klik di luar
+document.getElementById('linkModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+    document.getElementById('externalFrame').src = 'about:blank';
+  }
+});
+
+// Tutup modal developer saat klik close
+document.getElementById('closeDeveloperModal').addEventListener('click', function() {
+  const developerModal = document.getElementById('developerModal');
+  const developerFrame = document.getElementById('developerFrame');
+  developerModal.style.display = 'none';
+  developerFrame.src = 'about:blank'; // Clear iframe
+});
+
+// Tutup modal developer saat klik di luar
+document.getElementById('developerModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+    document.getElementById('developerFrame').src = 'about:blank';
+  }
 });

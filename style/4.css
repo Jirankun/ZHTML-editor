@@ -6,6 +6,7 @@
 }
 
 html, body {
+ user-select: none;
   height: 100%;
   background: #282a36;
   color: #f8f8f2;
@@ -18,6 +19,7 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding-bottom: 50px; /* Ruang untuk symbol-bar fixed */
 }
 
 .editor-header {
@@ -39,7 +41,7 @@ html, body {
 /* === LAYOUT SPLIT === */
 #split-layout {
   display: none;
-  height: 100%;
+  height: calc(100% - 70px);
   flex-direction: column;
 }
 
@@ -55,10 +57,16 @@ html, body {
 
 #preview-live {
   flex: 1;
+  opacity: 1;
+  overflow: hidden;
   border-bottom: 2px solid #44475a;
+  position: relative;
 }
 
 #preview-live iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: none;
@@ -68,6 +76,7 @@ html, body {
 #editor-split-container {
   flex: 1;
   min-height: 0;
+  padding-bottom: 50px; /* Ruang untuk symbol-bar fixed */
 }
 
 .CodeMirror {
@@ -169,45 +178,21 @@ html, body {
   opacity: 0;
 }
 
-.fab.main::after {
-  content: "\f00d";
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  opacity: 0;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 18px;
-  pointer-events: none;
-  line-height: 1;
-}
-
-.fab-container.open .fab.main::after {
-  opacity: 1;
-}
-
-.fab-label {
-  position: fixed;
-  left: 25%;
-  top: 50%;
-  transform: translateY(-50%) translateX(0);
-  background: rgba(0, 0, 0, 0.85);
+.modal-split-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    opacity 0.25s ease;
-  z-index: 1005;
+  transition: opacity 0.2s;
 }
-.fab-container.open .fab-label {
-  opacity: 1;
-  transform: translateY(-50%) translateX(-110px);
+
+.modal-split-btn:hover {
+  opacity: 0.8;
 }
 
 /* === MODAL === */
@@ -236,6 +221,14 @@ html, body {
   background: #1e1f29;
   color: #f8f8f2;
 }
+
+#modalTips .modal-body {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
 #modalPreview .modal-content {
   width: 380px;
   height: 640px;
@@ -352,7 +345,7 @@ html, body {
 #split-layout {
   display: flex;
   flex-direction: column;
-  height: 100%;  opacity: 0;
+  height: calc(100% - 70px);  opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.35s ease, transform 0.4s cubic-bezier(0.2, 0, 0, 1);
   pointer-events: none;
@@ -364,22 +357,32 @@ html, body {
   pointer-events: auto;
 }
 
-#preview-live {
-  flex: 0 0 0;
+#split-layout.closing {
   opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+/* === PERBAIKAN UKURAN MODAL === */
+/* Samakan ukuran modal preview dan developer dengan modal tips */
+#modalPreview .modal-content,
+#developerModal .modal-content {
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
   overflow: hidden;
-  transition: 
-    flex 0.5s cubic-bezier(0.2, 0, 0, 1),
-    opacity 0.4s ease;
-  border-bottom: 2px solid #44475a;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  background: #1e1f29;
+  color: #f8f8f2;
 }
 
-#split-layout.active #preview-live {
+#modalPreview .modal-body,
+#developerModal .modal-body {
   flex: 1;
-  opacity: 1;
-}
-
-#editor-split-container {
-  flex: 1;
-  min-height: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
 }

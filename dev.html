@@ -16,6 +16,7 @@
       color: white;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow-x: hidden;
+      padding: 20px;
     }
 
     .header-bg {
@@ -25,6 +26,7 @@
       background-size: cover;
       position: relative;
       overflow: visible;
+      border-radius: 10px;
     }
 
     /* Container utama: avatar + teks berdampingan */
@@ -47,7 +49,8 @@
       width: 150px;
       height: 150px;
       border-radius: 50%;
-      object-fit: cover;      border: 4px solid #121212;
+      object-fit: cover;
+      border: 4px solid #121212;
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
     }
 
@@ -75,6 +78,50 @@
       color: #aaa;
     }
 
+    .content {
+      margin-top: 350px;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #8be9fd;
+    }
+
+    .section-content {
+      line-height: 1.6;
+    }
+
+    a {
+      color: #50fa7b;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Gaya untuk memastikan link tidak membuka di tab baru */
+    a[target="_blank"]:not(.allow-blank) {
+      pointer-events: none;
+      cursor: default;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    a[target="_blank"]:not(.allow-blank):hover {
+      text-decoration: none;
+    }
+
     @media (max-width: 768px) {
       .profile-section {
         left: 20px;
@@ -95,8 +142,49 @@
       .title {
         font-size: 14px;
       }
+
+      .content {
+        margin-top: 300px;
+      }
     }
-  </style></head>
+  </style>
+  <script>
+    // Tangani semua link untuk membuka di popup
+    document.addEventListener('DOMContentLoaded', function() {
+      const links = document.querySelectorAll('a');
+      links.forEach(function(link) {
+        // Hapus target="_blank" jika ada
+        if (link.getAttribute('target') === '_blank') {
+          link.removeAttribute('target');
+        }
+
+        // Tambahkan event listener untuk membuka link di popup
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const href = this.getAttribute('href');
+
+          // Cek apakah URL valid sebelum membuka
+          try {
+            const url = new URL(href, window.location.href);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              // Kirim pesan ke parent untuk membuka link
+              if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                  type: 'openExternalLink',
+                  url: href
+                }, '*');
+              }
+            } else {
+              console.error('Protokol tidak diizinkan:', url.protocol);
+            }
+          } catch (error) {
+            console.error('URL tidak valid:', href);
+          }
+        });
+      });
+    });
+  </script>
+</head>
 <body>
   <div class="header-bg">
     <div class="profile-section">
@@ -105,7 +193,42 @@
       </div>
       <div class="text-layer">
         <div class="name">Zhyllan Fyllah</div>
-        <div class="title"><a href="https://www.github.com/jirankun/">@Jirankun</a></div>
+        <div class="title">@Jirankun.DeVc</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section">
+      <div class="section-title">Tentang Pengembang</div>
+      <div class="section-content">
+        <p>Saya adalah seorang pengembang aplikasi mobile,game mobile dan website</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Teknologi yang Digunakan</div>
+      <div class="section-content">
+        <p>Aplikasi ini dibangun menggunakan:</p>
+        <ul>
+          <li>Apache Cordova untuk pengembangan mobile cross-platform</li>
+          <li>CodeMirror sebagai editor teks utama</li>
+          <li>HTML, CSS, dan JavaScript untuk antarmuka pengguna</li>
+          <li>SQLite untuk penyimpanan data lokal</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fitur Utama</div>
+      <div class="section-content">
+        <ul>
+          <li>Editor kode dengan syntax highlighting</li>
+          <li>Pratinjau langsung (live preview)</li>
+          <li>Mode layar belah (split view)</li>
+          <li>Penyimpanan otomatis riwayat kode</li>
+          <li>Keamanan tingkat tinggi untuk pratinjau kode</li>
+        </ul>
       </div>
     </div>
   </div>

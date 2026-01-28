@@ -1,33 +1,8 @@
-.modal-split-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.modal-split-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-#editor-container-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden; /* Agar konten tidak melebihi viewport */
-}
-
-#editor-container {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
 .symbol-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   gap: 4px;
   padding: 6px 8px;
@@ -38,13 +13,18 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #44475a #282a36;
-  min-height: 44px; /* Tinggi minimal agar bisa diklik di mobile */
+  min-height: 44px;
   flex-shrink: 0;
   box-sizing: border-box;
+  z-index: 10000;
+  /* Nonaktifkan highlight saat tap */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* Gaya tombol */
 .sym-btn {
+  user-select: none;
   background: none;
   border: 1px solid #44475a;
   color: #f8f8f2;
@@ -58,22 +38,19 @@
   justify-content: center;
   transition: background-color 0.2s;
   flex-shrink: 0;
+  /* Penting: cegah highlight biru di Android/iOS */
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-.sym-btn:hover {
+.sym-btn:hover,
+.sym-btn:focus {
   background-color: #44475a;
+  outline: none;
 }
 
-/* Scrollbar styling (opsional) */
-.symbol-bar::-webkit-scrollbar {
-  height: 6px;
-}
-
-.symbol-bar::-webkit-scrollbar-thumb {
+/* Tombol spesial (Enter/Backspace) bisa dibedakan warna jika mau */
+.sym-btn.special {
   background-color: #44475a;
-  border-radius: 6px;
-}
-
-.symbol-bar::-webkit-scrollbar-track {
-  background: #282a36;
+  border-color: #6272a4;
 }
