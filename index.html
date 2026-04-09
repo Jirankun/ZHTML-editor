@@ -318,10 +318,38 @@
     let loadInterval = null;
 
     const fakeUrls = [
-      '/watch?v=dQw4w9WgXcQ', '/secure/auth?token=xyz', '/error/404?msg=TERJEBAK',
-      '/live?stream=horror_666', '/system/critical?alert=RED', '/you/cant/escape',
-      '/👁️/watching/you', '/redirect?to=nightmare', '/loading...please/wait',
-      '/⚠️/warning/malicious', '/dont-look-back', '/im-watching-you'
+      '/home','/profile','/dashboard','/settings','/messages','/notifications','/search','/login','/logout','/help',
+      '/about','/contact','/status','/feed','/explore','/account','/security','/privacy','/update','/loading',
+      '/dont-look-back','/im-watching-you','/behind-you','/its-too-late','/run-now','/you-cant-escape','/still-there?','/why-are-you-here',
+      '/who-is-behind-you','/turn-around','/do-not-refresh','/stop-reading','/i-see-you','/you-are-not-alone','/dont-blink','/it-knows',
+      '/listen-carefully','/something-moved','/check-the-door','/its-in-your-room','/wake-up-now','/this-is-not-real','/help-me','/can-you-hear-it',
+      '/they-found-you','/no-way-out','/you-shouldnt-be-here','/its-getting-closer','/dont-turn-off','/keep-watching','/it-hears-you','/it-sees-all',
+      '/error/404','/error/500','/error/666','/fatal/error','/system/crash','/system/infected','/system/override','/access/denied',
+      '/breach/detected','/camera/active','/mic/on','/tracking/you','/uploading/data','/uploading/soul','/downloading/fear','/decrypting/files',
+      '/live/feed','/live/feed/unknown','/stream/ghost','/stream/void','/dark/web','/dark/web/entry','/void/open','/void/deeper',
+      '/signal/lost','/connection/unstable','/connection/haunted','/network/compromised','/firewall/broken','/root/access','/admin/unknown',
+      '/user/not/found','/identity/missing','/who/are/you','/who/am/i','/memory/corrupted','/memory/leak','/memory/lost','/rewrite/memory',
+      '/time/loop','/time/broken','/time/reset','/timeline/collapsed','/future/denied','/past/changed','/present/glitch',
+      '/👁️/watching','/👁️/always','/👁️/behind','/👁️/closer','/👁️/inside','/👣/footsteps','/👣/behind','/👣/closer',
+      '/🩸/trace','/🩸/found','/🩸/dripping','/⚠️/warning','/⚠️/do-not-continue','/⚠️/unsafe','/☠️/danger','/☠️/ahead',
+      '/🕳️/falling','/🕳️/endless','/🕳️/void','/🪞/mirror','/🪞/broken','/🪞/reflection','/🪞/wrong',
+      '/shadow/moving','/shadow/watching','/shadow/behind','/shadow/closer','/shadow/inside',
+      '/mirror/broken','/mirror/wrong','/reflection/incorrect','/reflection/smiling','/reflection/blinking',
+      '/closet/open','/closet/creak','/door/open','/door/unlocked','/door/slowly','/window/open','/window/knock',
+      '/under/your/bed','/under/bed/movement','/bed/unsafe','/room/not/empty','/room/changing','/room/darker',
+      '/lights/off','/lights/flicker','/lights/broken','/darkness/growing','/darkness/watching',
+      '/sound/heard','/sound/behind','/sound/closer','/sound/inside','/voice/unknown','/voice/calling',
+      '/whisper/heard','/whisper/yourname','/whisper/again','/whisper/closer',
+      '/breathing/heavy','/breathing/behind','/breathing/near','/breathing/in/ear',
+      '/heartbeat/fast','/heartbeat/loud','/heartbeat/not/yours',
+      '/step/one','/step/two','/step/three','/final/step','/last/chance','/point/no/return',
+      '/exit/not/found','/escape/failed','/escape/impossible','/trapped/here','/forever/here',
+      '/dont/go','/stay/here','/keep/scrolling','/keep/looking','/almost/there','/just/a/little/more',
+      '/you/are/close','/closer/now','/very/close','/too/close',
+      '/it/is/behind','/it/is/here','/it/is/inside','/it/is/you',
+      '/who/is/real','/are/you/real','/am/i/real','/nothing/is/real',
+      '/this/is/not/a/test','/this/is/not/a/joke','/this/is/your/end',
+     '/goodbye','/no/escape','/end/of/path','/final/page'
     ];
 
     function changeUrl(path) {
@@ -335,7 +363,7 @@
 
       loadInterval = setInterval(() => {
         if (progress < 45) progress += 2.5;
-        else if (progress < 55) progress += 0.4; // STUCK effect
+        else if (progress < 55) progress += 2; // STUCK effect
         else progress += 3;
 
         if (progress >= 100) {
@@ -346,7 +374,7 @@
           el.percent.textContent = '100%';
           el.text.textContent = 'Selesai!';
           
-          setTimeout(playVideo, 300);
+          setTimeout(playVideo, 1);
           return;
         }
 
@@ -370,7 +398,7 @@
       const playPromise = el.video.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          setTimeout(() => { el.video.muted = false; }, 500);
+          setTimeout(() => { el.video.muted = false; }, 1);
         }).catch(() => {
           el.video.muted = true;
           el.video.play();
