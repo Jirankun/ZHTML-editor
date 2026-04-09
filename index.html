@@ -5,22 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>🎬 Video List</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: #0a0a0a;
-      color: #eee;
-      height: 100%;
-      overflow: hidden;
-      overscroll-behavior: none;
+      background: #0a0a0a; color: #eee;
+      height: 100%; overflow: hidden; overscroll-behavior: none;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Background UI */
+    /* Background UI - bakal di-hide pas prank aktif */
     .fake-header {
-      padding: 50px 20px 16px;
-      background: #111;
-      border-bottom: 1px solid #222;
-      display: flex; align-items: center; gap: 12px;
+      padding: 50px 20px 16px; background: #111;
+      border-bottom: 1px solid #222; display: flex; align-items: center; gap: 12px;
     }
     .fake-header .logo {
       width: 32px; height: 32px; background: #333; border-radius: 8px;
@@ -30,7 +26,6 @@
       height: 20px; background: #222; border-radius: 4px; width: 120px;
       animation: pulse 1.5s infinite ease-in-out 0.2s;
     }
-
     .skeleton-list {
       padding: 12px; display: flex; flex-direction: column; gap: 16px;
       max-width: 800px; margin: 0 auto; width: 100%;
@@ -47,17 +42,17 @@
     }
     .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
     .skeleton-title {
-      height: 16px;      background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+      height: 16px;
+      background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
       background-size: 200% 100%; border-radius: 4px;
       animation: shimmer 1.4s infinite linear 0.1s; width: 90%;
     }
-    .skeleton-meta { display: flex; gap: 8px; }
-    .skeleton-meta span { height: 12px; background: #1a1a1a; border-radius: 3px; width: 50px; }
+    .skeleton-meta { display: flex; gap: 8px; }    .skeleton-meta span { height: 12px; background: #1a1a1a; border-radius: 3px; width: 50px; }
 
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
-    /* LOADING SCREEN */
+    /* === LOADING SCREEN (OPTIMIZED) === */
     #loading-screen {
       position: fixed; inset: 0;
       width: 100dvw; height: 100dvh;
@@ -65,6 +60,7 @@
       display: none; justify-content: center; align-items: center;
       z-index: 99999; flex-direction: column; overflow: hidden;
       transform: translateZ(0); will-change: transform;
+      isolation: isolate; /* Create new stacking context */
     }
     #loading-screen.active { display: flex; }
 
@@ -90,18 +86,17 @@
       position: relative; z-index: 10;
       display: flex; flex-direction: column; align-items: center; gap: 30px;
     }
-
     .loading-box-wrapper { width: 100px; height: 100px; perspective: 800px; }
     .loading-box {
       width: 100%; height: 100%; position: relative;
       transform-style: preserve-3d; animation: box3DRotate 3s ease-in-out infinite;
     }
-    .box-face {      position: absolute; width: 100px; height: 100px;
+    .box-face {
+      position: absolute; width: 100px; height: 100px;
       background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
       border: 2px solid #e74c3c; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem;
-      box-shadow: 0 0 30px rgba(231, 76, 60, 0.5), inset 0 0 15px rgba(255,255,255,0.1);
+      font-size: 1.8rem;      box-shadow: 0 0 30px rgba(231, 76, 60, 0.5), inset 0 0 15px rgba(255,255,255,0.1);
     }
     .box-face:nth-child(1) { transform: rotateY(0deg) translateZ(50px); }
     .box-face:nth-child(2) { transform: rotateY(90deg) translateZ(50px); }
@@ -135,8 +130,7 @@
     .loading-text {
       font-size: 1.4rem; font-weight: 700; color: #e74c3c;
       text-transform: uppercase; letter-spacing: 3px;
-      text-shadow: 0 0 15px rgba(231, 76, 60, 0.7);
-      margin-bottom: 5px;
+      text-shadow: 0 0 15px rgba(231, 76, 60, 0.7); margin-bottom: 5px;
     }
     .loading-percentage {
       font-size: 1.8rem; font-weight: 900; color: #fff;
@@ -146,22 +140,21 @@
       font-size: 0.85rem; color: #888; margin-top: 10px;
       font-style: italic; text-align: center; min-height: 20px;
     }
-    /* CONTENT OVERLAY */
+
+    /* === CONTENT OVERLAY === */
     #content-overlay {
       position: fixed; inset: 0; width: 100dvw; height: 100dvh;
       background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-      z-index: 9998; pointer-events: none; opacity: 0;
-      transition: opacity 0.3s ease;
-      transform: translateZ(0);
+      z-index: 9998; pointer-events: none; opacity: 0;      transition: opacity 0.3s ease; transform: translateZ(0);
     }
     #content-overlay.active { pointer-events: all; opacity: 1; }
 
-    /* PRANK / VIDEO OVERLAY */
+    /* === PRANK / VIDEO OVERLAY === */
     #prank-overlay {
       position: fixed; inset: 0; width: 100dvw; height: 100dvh;
       background: #000; display: none; z-index: 100000;
       overflow: hidden; align-items: center; justify-content: center;
-      transform: translateZ(0); will-change: transform;
+      transform: translateZ(0); will-change: transform; isolation: isolate;
     }
     #video-container { width: 100%; height: 100%; position: relative; }
     #prank-video {
@@ -188,19 +181,20 @@
       75% { transform: translate(calc(-50% - 2px), calc(-50% + 1px)) rotate(0.6deg); }
     }
 
+    /* === COOKIE CONSENT === */
     #cookie-consent {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
       border-top: 3px solid #e74c3c; padding: 18px 20px;
       display: none; flex-direction: column; gap: 14px;
       z-index: 10002; box-shadow: 0 -6px 24px rgba(0,0,0,0.6);
-      animation: slideUp 0.4s ease-out; width: 100%;    }
+      animation: slideUp 0.4s ease-out; width: 100%;
+    }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     #cookie-consent p { font-size: 0.95rem; line-height: 1.5; color: #ccc; margin: 0; }
     #cookie-consent p strong { color: #e74c3c; font-weight: 700; }
     #cookie-consent .btn-group { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
-    #cookie-consent button {
-      padding: 11px 24px; font-size: 0.95rem; border: none;
+    #cookie-consent button {      padding: 11px 24px; font-size: 0.95rem; border: none;
       border-radius: 10px; cursor: pointer; font-weight: 600;
       transition: all 0.2s; min-width: 140px;
     }
@@ -209,10 +203,11 @@
     #decline-cookie { background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; box-shadow: 0 4px 14px rgba(231,76,60,0.35); }
     #decline-cookie:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(231,76,60,0.55); }
 
-    /* FORCE HIDE BACKGROUND WHEN PRANK ACTIVE */
+    /* === FORCE HIDE BACKGROUND WHEN PRANK ACTIVE === */
     body.prank-active .fake-header,
     body.prank-active .skeleton-list,
-    body.prank-active #content-overlay {
+    body.prank-active #content-overlay,
+    body.prank-active #cookie-consent {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
@@ -243,12 +238,12 @@
     <div class="logo"></div>
     <div class="title"></div>
   </div>
+
   <div class="skeleton-list">
     <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
     <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
     <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
+    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
   </div>
 
   <div id="content-overlay"></div>
@@ -281,9 +276,8 @@
 
   <div id="prank-overlay">
     <div id="video-container">
-      <video id="prank-video" preload="auto" playsinline>
+      <video id="prank-video" preload="auto" playsinline muted>
         <source src="video.mp4" type="video/mp4">
-        <!-- Fallback online video (hapus kalo udah punya video.mp4 sendiri) -->
         <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
       </video>
     </div>
@@ -292,12 +286,12 @@
 
   <div id="cookie-consent">
     <p><strong><h2>🍪 CHOKIEE</h2></strong></p>
-    <p>Halaman Ini membutuhkan chokiee untuk mengelola dan menyimpan preferensi pengguna, klik <strong>Izinkan</strong> untuk mendapatkan hasil terbaik.</p>    <div class="btn-group">
+    <p>Halaman Ini membutuhkan chokiee untuk mengelola dan menyimpan preferensi pengguna, klik <strong>Izinkan</strong> untuk mendapatkan hasil terbaik.</p>
+    <div class="btn-group">
       <button id="decline-cookie">Tidak</button>
       <button id="accept-cookie">Izinkan</button>
     </div>
   </div>
-
   <script>
     const el = {
       loading: document.getElementById('loading-screen'),
@@ -341,39 +335,45 @@
         if (progress >= 100) {
           progress = 100;
           clearInterval(loadInterval);
-          loadInterval = null;          
+          loadInterval = null;
           el.progress.style.width = '100%';
           el.percent.textContent = '100%';
           el.text.textContent = 'Selesai!';
-          
           setTimeout(playVideo, 300);
           return;
-        }
-
-        el.progress.style.width = progress + '%';
+        }        el.progress.style.width = progress + '%';
         el.percent.textContent = Math.floor(progress) + '%';
-        
         if (Math.floor(progress) % 15 === 0 && statusIdx < statuses.length) {
           el.status.textContent = statuses[statusIdx++];
         }
       }, 70);
     }
 
-    function playVideo() {
+    // === VIDEO PLAY WITH AUTOPLAY BYPASS ===
+    async function playVideo() {
       el.loading.classList.remove('active');
       el.prank.style.display = 'flex';
       el.video.style.display = 'block';
-      
       el.video.currentTime = 0;
-      el.video.muted = true;
-      
-      const playPromise = el.video.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setTimeout(() => { el.video.muted = false; }, 500);
-        }).catch(() => {
-          el.video.muted = true;
-          el.video.play();
+
+      try {
+        // 1. Play muted first (bypass autoplay policy) [[8]][[14]]
+        el.video.muted = true;
+        await el.video.play();
+        
+        // 2. Unmute after 500ms if possible
+        setTimeout(() => {
+          el.video.muted = false;
+          el.video.play().catch(() => {}); // Silent fail if still blocked
+        }, 500);
+      } catch (err) {
+        console.warn('Play failed:', err);
+        // Fallback: stay muted or switch to horror
+        el.video.muted = true;
+        el.video.play().catch(() => {
+          el.horror.classList.remove('hidden');
+          el.prank.classList.add('horror-mode');
+          startChaosAndClose();
         });
       }
 
@@ -412,35 +412,41 @@
       }, 600);
     }
 
-    function initPrank(mode) {
+    // === INIT PRANK (OPTIMIZED) ===
+    async function initPrank(mode) {
       if (active) return;
       active = true;
-      
+
       // ✅ FORCE HIDE BACKGROUND LAYER
       document.body.classList.add('prank-active');
-      
+
+      // ✅ REQUEST FULLSCREEN IMMEDIATELY (user gesture context) [[18]][[20]]
       const docEl = document.documentElement;
-      if (docEl.requestFullscreen) docEl.requestFullscreen().catch(()=>{});
+      if (docEl.requestFullscreen) await docEl.requestFullscreen().catch(()=>{});
       else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
       else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
 
+      // ✅ HIDE UI ELEMENTS
       el.cookie.style.display = 'none';
       el.overlay.style.display = 'none';
       el.loading.classList.add('active');
 
+      // ✅ START LOADING SIMULATION
       simulateLoading();
       setTimeout(() => changeUrl('/loading/video'), 1200);
 
+      // ✅ HORROR MODE (Decline)
       if (mode === 'horror') {
         clearInterval(loadInterval);
         loadInterval = null;
-        el.loading.classList.remove('active');
-        el.prank.style.display = 'flex';
+        el.loading.classList.remove('active');        el.prank.style.display = 'flex';
         el.prank.classList.add('horror-mode');
         el.horror.classList.remove('hidden');
         startChaosAndClose();
-      }    }
+      }
+    }
 
+    // Events
     el.accept.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); initPrank('video'); return false; });
     el.decline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); initPrank('horror'); return false; });
 
@@ -452,6 +458,7 @@
       if (active) { e.preventDefault(); window.history.pushState(null, '', window.location.href); }
     });
 
+    // Init cookie consent
     setTimeout(() => {
       el.cookie.style.display = 'flex';
       el.overlay.classList.add('active');
