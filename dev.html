@@ -17,6 +17,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow-x: hidden;
       padding: 20px;
+      user-select: none;
     }
 
     .header-bg {
@@ -46,8 +47,8 @@
     }
 
     .avatar {
-      width: 150px;
-      height: 150px;
+      width: 1px;
+      height: 1px;
       border-radius: 50%;
       object-fit: cover;
       border: 4px solid #121212;
@@ -56,14 +57,14 @@
 
     /* Background teks: hanya di kanan, panjang ke kanan */
     .text-layer {
-      background: rgba(0, 0, 0, 0.65);
-      padding: 14px 24px;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 14px 2px;
       border-radius: 12px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-      min-width: 250px;
-      max-width: 500px;
+      -webkit-backdrop-filter: blur(5px);
+      min-width: 5px;
+      max-width: 5px;
       z-index: 15; /* di bawah avatar */
     }
 
@@ -79,19 +80,19 @@
     }
 
     .content {
-      margin-top: 350px;
-      padding: 20px;
+      margin-top: 1px;
+      padding: 1px;
     }
 
     .section {
-      margin-bottom: 30px;
-      padding: 15px;
+      margin-bottom: 10px;
+      padding: 10px;
       background: rgba(255, 255, 255, 0.05);
       border-radius: 8px;
     }
 
     .section-title {
-      font-size: 18px;
+      font-size: 25px;
       font-weight: bold;
       margin-bottom: 10px;
       color: #8be9fd;
@@ -124,8 +125,8 @@
 
     @media (max-width: 768px) {
       .profile-section {
-        left: 20px;
-        top: 200px;
+        left: -1px;
+        top: 220px;
         gap: 15px;
       }
       .avatar {
@@ -133,18 +134,18 @@
         height: 120px;
       }
       .text-layer {
-        padding: 12px 20px;
-        min-width: 200px;
+        padding: 20px 20px;
+        min-width: 2000px;
       }
       .name {
-        font-size: 22px;
+        font-size: 28px;
       }
       .title {
-        font-size: 14px;
+        font-size: 15px;
       }
 
       .content {
-        margin-top: 300px;
+        margin-top: 80px;
       }
     }
   </style>
