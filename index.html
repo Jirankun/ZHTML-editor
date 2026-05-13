@@ -1,469 +1,355 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>🎬 Video List</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0a0a0a; color: #eee;
-      height: 100%; overflow: hidden; overscroll-behavior: none;
-      -webkit-font-smoothing: antialiased;
-    }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *; frame-src *; media-src *; object-src 'none'; child-src *; upgrade-insecure-requests;">
+  <title>Code Editor</title>
 
-    /* Background UI - bakal di-hide pas prank aktif */
-    .fake-header {
-      padding: 50px 20px 16px; background: #111;
-      border-bottom: 1px solid #222; display: flex; align-items: center; gap: 12px;
-    }
-    .fake-header .logo {
-      width: 32px; height: 32px; background: #333; border-radius: 8px;
-      animation: pulse 1.5s infinite ease-in-out;
-    }
-    .fake-header .title {
-      height: 20px; background: #222; border-radius: 4px; width: 120px;
-      animation: pulse 1.5s infinite ease-in-out 0.2s;
-    }
-    .skeleton-list {
-      padding: 12px; display: flex; flex-direction: column; gap: 16px;
-      max-width: 800px; margin: 0 auto; width: 100%;
-    }
-    .skeleton-item {
-      display: flex; gap: 14px; padding: 12px;
-      background: #111; border-radius: 12px; border: 1px solid #1a1a1a;
-    }
-    .skeleton-thumb {
-      width: 120px; height: 68px;
-      background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
-      background-size: 200% 100%; border-radius: 8px;
-      animation: shimmer 1.4s infinite linear; flex-shrink: 0;
-    }
-    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-    .skeleton-title {
-      height: 16px;
-      background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
-      background-size: 200% 100%; border-radius: 4px;
-      animation: shimmer 1.4s infinite linear 0.1s; width: 90%;
-    }
-    .skeleton-meta { display: flex; gap: 8px; }    .skeleton-meta span { height: 12px; background: #1a1a1a; border-radius: 3px; width: 50px; }
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="style/1.css">
+  <link rel="stylesheet" href="style/2.css">
+  <link rel="stylesheet" href="style/3.css">
+  <link rel="stylesheet" href="style/4.css">
+  <link rel="stylesheet" href="style/5.css">
+  <link rel="icon" href="head.png" type="image/png">
 
-    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-    /* === LOADING SCREEN (OPTIMIZED) === */
-    #loading-screen {
-      position: fixed; inset: 0;
-      width: 100dvw; height: 100dvh;
-      background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
-      display: none; justify-content: center; align-items: center;
-      z-index: 99999; flex-direction: column; overflow: hidden;
-      transform: translateZ(0); will-change: transform;
-      isolation: isolate; /* Create new stacking context */
-    }
-    #loading-screen.active { display: flex; }
-
-    .loading-bg { position: absolute; width: 100%; height: 100%; overflow: hidden; }
-    .particle {
-      position: absolute; width: 4px; height: 4px;
-      background: rgba(231, 76, 60, 0.6); border-radius: 50%;
-      animation: particleFloat 8s infinite ease-in-out;
-      box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
-    }
-    .particle:nth-child(1) { left: 20%; animation-delay: 0s; }
-    .particle:nth-child(2) { left: 40%; animation-delay: 1.5s; }
-    .particle:nth-child(3) { left: 60%; animation-delay: 3s; }
-    .particle:nth-child(4) { left: 80%; animation-delay: 4.5s; }
-    .particle:nth-child(5) { left: 30%; animation-delay: 2s; }
-    @keyframes particleFloat {
-      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 1; } 90% { opacity: 1; }
-      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
-    }
-
-    .loading-container {
-      position: relative; z-index: 10;
-      display: flex; flex-direction: column; align-items: center; gap: 30px;
-    }
-    .loading-box-wrapper { width: 100px; height: 100px; perspective: 800px; }
-    .loading-box {
-      width: 100%; height: 100%; position: relative;
-      transform-style: preserve-3d; animation: box3DRotate 3s ease-in-out infinite;
-    }
-    .box-face {
-      position: absolute; width: 100px; height: 100px;
-      background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
-      border: 2px solid #e74c3c; border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem;      box-shadow: 0 0 30px rgba(231, 76, 60, 0.5), inset 0 0 15px rgba(255,255,255,0.1);
-    }
-    .box-face:nth-child(1) { transform: rotateY(0deg) translateZ(50px); }
-    .box-face:nth-child(2) { transform: rotateY(90deg) translateZ(50px); }
-    .box-face:nth-child(3) { transform: rotateY(180deg) translateZ(50px); }
-    .box-face:nth-child(4) { transform: rotateY(-90deg) translateZ(50px); }
-    .box-face:nth-child(5) { transform: rotateX(90deg) translateZ(50px); }
-    .box-face:nth-child(6) { transform: rotateX(-90deg) translateZ(50px); }
-    @keyframes box3DRotate {
-      0%, 30% { transform: rotateX(0deg) rotateY(0deg); }
-      50%, 70% { transform: rotateX(180deg) rotateY(180deg); }
-      100% { transform: rotateX(360deg) rotateY(360deg); }
-    }
-
-    .progress-container { width: 260px; max-width: 90vw; }
-    .progress-bar-bg {
-      width: 100%; height: 6px; background: rgba(255,255,255,0.1);
-      border-radius: 6px; overflow: hidden; position: relative;
-    }
-    .progress-bar-fill {
-      height: 100%; background: linear-gradient(90deg, #e74c3c, #c0392b);
-      border-radius: 6px; transition: width 0.1s linear;
-      box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-    }
-    .progress-bar-fill::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      animation: progressSweep 1.2s ease-in-out infinite;
-    }
-    @keyframes progressSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
-    .loading-text {
-      font-size: 1.4rem; font-weight: 700; color: #e74c3c;
-      text-transform: uppercase; letter-spacing: 3px;
-      text-shadow: 0 0 15px rgba(231, 76, 60, 0.7); margin-bottom: 5px;
-    }
-    .loading-percentage {
-      font-size: 1.8rem; font-weight: 900; color: #fff;
-      font-family: monospace; text-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
-    }
-    .loading-status {
-      font-size: 0.85rem; color: #888; margin-top: 10px;
-      font-style: italic; text-align: center; min-height: 20px;
-    }
-
-    /* === CONTENT OVERLAY === */
-    #content-overlay {
-      position: fixed; inset: 0; width: 100dvw; height: 100dvh;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-      z-index: 9998; pointer-events: none; opacity: 0;      transition: opacity 0.3s ease; transform: translateZ(0);
-    }
-    #content-overlay.active { pointer-events: all; opacity: 1; }
-
-    /* === PRANK / VIDEO OVERLAY === */
-    #prank-overlay {
-      position: fixed; inset: 0; width: 100dvw; height: 100dvh;
-      background: #000; display: none; z-index: 100000;
-      overflow: hidden; align-items: center; justify-content: center;
-      transform: translateZ(0); will-change: transform; isolation: isolate;
-    }
-    #video-container { width: 100%; height: 100%; position: relative; }
-    #prank-video {
-      width: 100%; height: 100%; object-fit: contain;
-      background: #000; display: block;
-    }
-
-    #prank-overlay.horror-mode { animation: horrorFlash 0.08s infinite alternate; }
-    @keyframes horrorFlash {
-      from { background: #200; filter: contrast(1.1) brightness(0.9); }
-      to { background: #700; filter: contrast(1.8) brightness(1.3) saturate(2); }
-    }
-    .horror-text {
-      position: absolute; font-size: clamp(1.4rem, 6vw, 3rem);
-      font-weight: 900; color: #fff; pointer-events: none; z-index: 100001;
-      text-align: center; padding: 20px; max-width: 90%;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      text-shadow: 0 0 10px #f00, 0 0 20px #f00, 2px 2px 0 #000, -2px -2px 0 #000;
-      animation: horrorShake 0.1s infinite;
-    }
-    @keyframes horrorShake {
-      0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
-      25% { transform: translate(calc(-50% + 2px), calc(-50% - 1px)) rotate(-0.6deg); }
-      75% { transform: translate(calc(-50% - 2px), calc(-50% + 1px)) rotate(0.6deg); }
-    }
-
-    /* === COOKIE CONSENT === */
-    #cookie-consent {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
-      border-top: 3px solid #e74c3c; padding: 18px 20px;
-      display: none; flex-direction: column; gap: 14px;
-      z-index: 10002; box-shadow: 0 -6px 24px rgba(0,0,0,0.6);
-      animation: slideUp 0.4s ease-out; width: 100%;
-    }
-    @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    #cookie-consent p { font-size: 0.95rem; line-height: 1.5; color: #ccc; margin: 0; }
-    #cookie-consent p strong { color: #e74c3c; font-weight: 700; }
-    #cookie-consent .btn-group { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
-    #cookie-consent button {      padding: 11px 24px; font-size: 0.95rem; border: none;
-      border-radius: 10px; cursor: pointer; font-weight: 600;
-      transition: all 0.2s; min-width: 140px;
-    }
-    #accept-cookie { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; box-shadow: 0 4px 14px rgba(46,204,113,0.35); }
-    #accept-cookie:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,113,0.55); }
-    #decline-cookie { background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; box-shadow: 0 4px 14px rgba(231,76,60,0.35); }
-    #decline-cookie:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(231,76,60,0.55); }
-
-    /* === FORCE HIDE BACKGROUND WHEN PRANK ACTIVE === */
-    body.prank-active .fake-header,
-    body.prank-active .skeleton-list,
-    body.prank-active #content-overlay,
-    body.prank-active #cookie-consent {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
-
-    @media (max-width: 768px) {
-      .fake-header { padding: 45px 16px 14px; }
-      .skeleton-list { padding: 10px; gap: 14px; }
-      .skeleton-item { padding: 10px; gap: 12px; flex-direction: column; }
-      .skeleton-thumb { width: 100%; height: 180px; }
-      .skeleton-title { width: 95%; }
-      #cookie-consent { padding: 16px 18px; border-top-width: 2px; }
-      #cookie-consent p { font-size: 0.9rem; }
-      #cookie-consent button { padding: 10px 18px; font-size: 0.9rem; min-width: 120px; }
-      .loading-box-wrapper { width: 80px; height: 80px; }
-      .box-face { width: 80px; height: 80px; }
-      .loading-text { font-size: 1.2rem; }
-      .loading-percentage { font-size: 1.5rem; }
-      .progress-container { width: 220px; }
-    }
-    .hidden { display: none !important; }
-  </style>
 </head>
 <body>
 
-  <div class="fake-header">
-    <div class="logo"></div>
-    <div class="title"></div>
+<!-- Layout Default -->
+<div id="default-layout">
+  <div class="editor-header">
+     <button id="splitViewBtn" class="modal-split-btn" title="Buka Mode Layar Belah">
+       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+         <rect x="3" y="3" width="8" height="18" rx="1"/>
+         <rect x="13" y="3" width="8" height="18" rx="1"/>
+         <line x1="12" y1="8" x2="12" y2="16"/>
+       </svg>
+    </button>
   </div>
-
-  <div class="skeleton-list">
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
-    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>    <div class="skeleton-item"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-title"></div><div class="skeleton-meta"><span></span><span></span><span></span></div></div></div>
+  <div id="editor-container">
+    <textarea id="editor"></textarea>
   </div>
+<!-- BAR SIMBOL - TETAP UTUH -->
+<div id="symbol-bar" class="symbol-bar">
+  <!-- HTML (paling sering) -->
+  <button class="sym-btn" data-char="<"><</button>
+  <button class="sym-btn" data-char=">">></button>
+  <button class="sym-btn" data-char='"'>"</button>
+  <button class="sym-btn" data-char="'">'</button>
+  <button class="sym-btn" data-char="=">=</button>
+  <button class="sym-btn" data-char="/">/</button>
+  <button class="sym-btn" data-char="&">&</button>
+  <button class="sym-btn" data-char=";">;</button>
 
-  <div id="content-overlay"></div>
+  <!-- CSS -->
+  <button class="sym-btn" data-char="{">{</button>
+  <button class="sym-btn" data-char="}">}</button>
+  <button class="sym-btn" data-char=":">:</button>
+  <button class="sym-btn" data-char=".">.</button>
+  <button class="sym-btn" data-char="#">#</button>
+  <button class="sym-btn" data-char="*">*</button>
+  <button class="sym-btn" data-char=";{">;</button> <!-- untuk akhiri properti -->
 
-  <!-- LOADING SCREEN -->
-  <div id="loading-screen">
-    <div class="loading-bg">
-      <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-      <div class="particle"></div><div class="particle"></div>
+  <!-- JavaScript -->
+  <button class="sym-btn" data-char="(">(</button>
+  <button class="sym-btn" data-char=")">)</button>
+  <button class="sym-btn" data-char="[">[</button>
+  <button class="sym-btn" data-char="]">]</button>
+  <button class="sym-btn" data-char="{">{</button>
+  <button class="sym-btn" data-char="}">}</button>
+  <button class="sym-btn" data-char=",">,</button>
+  <button class="sym-btn" data-char=".">.</button>
+  <button class="sym-btn" data-char="`">`</button>
+  <button class="sym-btn" data-char="+">+</button>
+  <button class="sym-btn" data-char="-">−</button>
+  <button class="sym-btn" data-char="*">*</button>
+  <button class="sym-btn" data-char="/">/</button>
+  <button class="sym-btn" data-char="%">%</button>
+  <button class="sym-btn" data-char="!">!</button>
+  <button class="sym-btn" data-char="?">?</button>
+  <button class="sym-btn" data-char="|">|</button>
+  <button class="sym-btn" data-char="&">&</button>
+  <button class="sym-btn" data-char="~">~</button>
+  <button class="sym-btn" data-char="^">^</button>
+  <button class="sym-btn" data-char="\\">\</button>
+
+  <!-- Spesial: Enter & Backspace -->
+  <button class="sym-btn special" data-char="newline">↵</button>
+  <button class="sym-btn special" data-char="backspace">⌫</button>
+</div>
+</div>
+
+<!-- Layout Split -->
+<div id="split-layout" style="display: none;">
+  <div id="split-header">
+    <div id="splitPreviewTitle">Pratinjau</div>
+    <button id="closeSplitBtn" title="Tutup Mode Split">✕</button>
+  </div>
+  <div id="preview-live">
+    <iframe id="liveFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-to-custom-protocols"></iframe>
+  </div>
+  <div id="editor-split-container"></div>
+</div>
+
+<!-- BAR SIMBOL - TETAP UTUH -->
+<div id="symbol-bar" class="symbol-bar">
+  <!-- HTML (paling sering) -->
+  <button class="sym-btn" data-char="<"><</button>
+  <button class="sym-btn" data-char=">">></button>
+  <button class="sym-btn" data-char='"'>"</button>
+  <button class="sym-btn" data-char="'">'</button>
+  <button class="sym-btn" data-char="=">=</button>
+  <button class="sym-btn" data-char="/">/</button>
+  <button class="sym-btn" data-char="&">&</button>
+  <button class="sym-btn" data-char=";">;</button>
+
+  <!-- CSS -->
+  <button class="sym-btn" data-char="{">{</button>
+  <button class="sym-btn" data-char="}">}</button>
+  <button class="sym-btn" data-char=":">:</button>
+  <button class="sym-btn" data-char=".">.</button>
+  <button class="sym-btn" data-char="#">#</button>
+  <button class="sym-btn" data-char="*">*</button>
+  <button class="sym-btn" data-char=";{">;</button> <!-- untuk akhiri properti -->
+
+  <!-- JavaScript -->
+  <button class="sym-btn" data-char="(">(</button>
+  <button class="sym-btn" data-char=")">)</button>
+  <button class="sym-btn" data-char="[">[</button>
+  <button class="sym-btn" data-char="]">]</button>
+  <button class="sym-btn" data-char="{">{</button>
+  <button class="sym-btn" data-char="}">}</button>
+  <button class="sym-btn" data-char=",">,</button>
+  <button class="sym-btn" data-char=".">.</button>
+  <button class="sym-btn" data-char="`">`</button>
+  <button class="sym-btn" data-char="+">+</button>
+  <button class="sym-btn" data-char="-">−</button>
+  <button class="sym-btn" data-char="*">*</button>
+  <button class="sym-btn" data-char="/">/</button>
+  <button class="sym-btn" data-char="%">%</button>
+  <button class="sym-btn" data-char="!">!</button>
+  <button class="sym-btn" data-char="?">?</button>
+  <button class="sym-btn" data-char="|">|</button>
+  <button class="sym-btn" data-char="&">&</button>
+  <button class="sym-btn" data-char="~">~</button>
+  <button class="sym-btn" data-char="^">^</button>
+  <button class="sym-btn" data-char="\\">\</button>
+
+  <!-- Spesial: Enter & Backspace -->
+  <button class="sym-btn special" data-char="newline">↵</button>
+  <button class="sym-btn special" data-char="backspace">⌫</button>
+</div>
+
+<!-- FAB -->
+<div id="fab" class="fab-container">
+  <button class="fab main" id="fabMain">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 18 22 12 16 6"></polyline>
+      <polyline points="8 6 2 12 8 18"></polyline>
+    </svg>
+  </button>
+  <button class="fab child" id="fabCopy" title="Salin Kode">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+  </button>
+  <button class="fab child" id="fabClear" title="Hapus Semua">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      <line x1="10" y1="11" x2="10" y2="17"></line>
+      <line x1="14" y1="11" x2="14" y2="17"></line>
+    </svg>
+  </button>
+  <button class="fab child" id="fabPreview" title="Pratinjau">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  </button>
+  <button class="fab child" id="fabTips" title="Tips & Trik">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+  </button>
+  <button class="fab child" id="fabDeveloper" title="Tentang Developer">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+  </button>
+</div>
+
+<!-- Modal Preview -->
+<div id="modalPreview" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div id="previewTitle">Pratinjau</div>
+      <div class="modal-close" id="closePreviewModal">&times;</div>
     </div>
-    <div class="loading-container">
-      <div class="loading-box-wrapper">
-        <div class="loading-box">
-          <div class="box-face"></div><div class="box-face">📹</div><div class="box-face">🎥</div>
-          <div class="box-face">📽️</div><div class="box-face">🎞️</div><div class="box-face">📺</div>
+    <div class="modal-body">
+      <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-to-custom-protocols"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tips -->
+<div id="modalTips" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>Tips & Trik Penggunaan</div>
+      <div class="modal-close" id="closeTipsModal">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div style="padding: 20px; line-height: 1.6;">
+        <h3 style="color: #50fa7b; margin-bottom: 15px;">Panduan Penggunaan Editor Kode</h3>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">1. Menulis Kode</h4>
+        <p>Gunakan editor utama untuk menulis kode HTML, CSS, atau JavaScript. Editor ini mendukung syntax highlighting dan auto-completion.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">2. Pratinjau Langsung</h4>
+        <p>Klik tombol "Pratinjau" untuk melihat hasil kode Anda secara real-time dalam modal popup.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">3. Mode Split View</h4>
+        <p>Klik ikon split di header untuk membuka mode layar terbelah yang menampilkan editor dan pratinjau secara bersamaan.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">4. Salin Kode</h4>
+        <p>Gunakan tombol salin untuk menyalin seluruh kode ke clipboard.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">5. Bar Simbol Cepat</h4>
+        <p>Gunakan tombol-tombol di bagian bawah layar untuk memasukkan simbol-simbol umum seperti kurung, tanda kutip, dll.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">6. Penyimpanan Otomatis</h4>
+        <p>Kode Anda akan otomatis disimpan ke penyimpanan lokal aplikasi.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">7. Keamanan</h4>
+        <p>Aplikasi ini menggunakan Content Security Policy dan sanitasi kode untuk memastikan keamanan saat menjalankan pratinjau.</p>
+
+        <h4 style="color: #ffb86c; margin-top: 20px;">8. Dukungan Link Eksternal</h4>
+        <p>Link eksternal dalam pratinjau akan dibuka dalam modal aman untuk mencegah navigasi keluar aplikasi.</p>
+
+        <div style="margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+          <h4 style="color: #ff5555; margin: 0;">⚠️ Peringatan Keamanan</h4>
+          <p style="margin: 10px 0 0 0;">Meskipun aplikasi ini dirancang dengan standar keamanan tinggi, selalu berhati-hati dengan kode yang Anda jalankan. Jangan menjalankan kode dari sumber yang tidak terpercaya.</p>
+        </div>
         </div>
       </div>
-      <div style="text-align:center;">
-        <div class="loading-text" id="loading-main-text">Memuat...</div>
-        <div class="loading-percentage" id="loading-percentage">0%</div>
-      </div>
-      <div class="progress-container">
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-        </div>
-      </div>
-      <div class="loading-status" id="loading-status">Menghubungkan ke server...</div>
     </div>
   </div>
+</div>
 
-  <div id="prank-overlay">
-    <div id="video-container">
-      <video id="prank-video" preload="auto" playsinline muted>
-        <source src="video.mp4" type="video/mp4">
-        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-      </video>
+<!-- Modal Link Eksternal -->
+<div id="linkModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="width: 90%; max-width: 900px; height: 80vh; max-height: 700px;">
+    <div class="modal-header">
+      <div>Pratinjau Link Eksternal</div>
+      <div class="modal-close" id="closeLinkModal">&times;</div>
     </div>
-    <div id="horror-msg" class="horror-text hidden">Are you stupid???>... 👁️</div>
-  </div>
-
-  <div id="cookie-consent">
-    <p><strong><h2>🍪 CHOKIEE</h2></strong></p>
-    <p>Halaman Ini membutuhkan chokiee untuk mengelola dan menyimpan preferensi pengguna, klik <strong>Izinkan</strong> untuk mendapatkan hasil terbaik.</p>
-    <div class="btn-group">
-      <button id="decline-cookie">Tidak</button>
-      <button id="accept-cookie">Izinkan</button>
+    <div class="modal-body" style="padding: 0; height: calc(100% - 50px);">
+      <iframe id="externalFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-top-navigation-to-custom-protocols" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
   </div>
-  <script>
-    const el = {
-      loading: document.getElementById('loading-screen'),
-      progress: document.getElementById('progress-fill'),
-      percent: document.getElementById('loading-percentage'),
-      text: document.getElementById('loading-main-text'),
-      status: document.getElementById('loading-status'),
-      cookie: document.getElementById('cookie-consent'),
-      overlay: document.getElementById('content-overlay'),
-      prank: document.getElementById('prank-overlay'),
-      video: document.getElementById('prank-video'),
-      horror: document.getElementById('horror-msg'),
-      accept: document.getElementById('accept-cookie'),
-      decline: document.getElementById('decline-cookie')
-    };
+</div>
 
-    let active = false;
-    let loadInterval = null;
+<!-- Modal untuk developer -->
+<div id="developerModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="width: 90%; max-width: 900px; height: 80vh; max-height: 700px;">
+    <div class="modal-header">
+      <div>Profil Developer</div>
+      <div class="modal-close" id="closeDeveloperModal">&times;</div>
+    </div>
+    <div class="modal-body" style="padding: 0; height: calc(100% - 50px);">
+      <iframe id="developerFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-top-navigation-to-custom-protocols" style="width: 100%; height: 100%; border: none;" src="dev.html"></iframe>
+    </div>
+  </div>
+</div>
 
-    const fakeUrls = [
-      '/watch?v=dQw4w9WgXcQ', '/secure/auth?token=xyz', '/error/404?msg=TERJEBAK',
-      '/live?stream=horror_666', '/system/critical?alert=RED', '/you/cant/escape',
-      '/👁️/watching/you', '/redirect?to=nightmare', '/loading...please/wait',
-      '/⚠️/warning/malicious', '/dont-look-back', '/im-watching-you'
-    ];
+<!-- Notifikasi Salin -->
+<div id="copyNotification">Semua kode berhasil disalin!</div>
 
-    function changeUrl(path) {
-      try { window.history.pushState(null, '', window.location.origin + path); } catch(e) {}
-    }
+<!-- CodeMirror Scripts -->
+<script src="script/1.js"></script>
+<script src="script/2.js"></script>
+<script src="script/3.js"></script>
+<script src="script/4.js"></script>
+<script src="script/5.js"></script>
+<script src="script/7.js"></script>
+<script src="script/8.js"></script>
+<script src="script/9.js"></script>
+<script src="script/10.js"></script>
+<script src="script/11.js"></script>
+<script src="script/12.js"></script>
+<script src="script/13.js"></script>
+<script src="script/14.js"></script>
+<script src="script/15.js"></script>
+<script src="script/16.js"></script>
+<script src="script/17.js"></script>
+<script src="script/18.js"></script>
+<script src="script/19.js"></script>
+<script src="script/20.js"></script>
 
-    function simulateLoading() {
-      let progress = 0;
-      const statuses = ['Menghubungkan...', 'Mempersiapkan...', 'Buffering...', 'Memproses...', 'Hampir selesai...'];
-      let statusIdx = 0;
+<script src="script/21.js"></script>
+<script src="script/22.js"></script>
+<script src="script/23.js"></script>
+<script src="script/24.js"></script>
+<script src="script/25.js"></script>
+<script src="script/26.js"></script>
+<script src="script/27.js"></script>
+<script src="script/28.js"></script>
+<script src="script/29.js"></script>
+<script src="script/30.js"></script>
 
-      loadInterval = setInterval(() => {
-        if (progress < 45) progress += 2.5;
-        else if (progress < 55) progress += 0.4; // STUCK effect
-        else progress += 3;
+<!-- Cordova Script -->
+<script src="cordova.js"></script>
 
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(loadInterval);
-          loadInterval = null;
-          el.progress.style.width = '100%';
-          el.percent.textContent = '100%';
-          el.text.textContent = 'Selesai!';
-          setTimeout(playVideo, 300);
-          return;
-        }        el.progress.style.width = progress + '%';
-        el.percent.textContent = Math.floor(progress) + '%';
-        if (Math.floor(progress) % 15 === 0 && statusIdx < statuses.length) {
-          el.status.textContent = statuses[statusIdx++];
-        }
-      }, 70);
-    }
+<!-- Cordova Initialization -->
+<script>
+document.addEventListener('deviceready', function() {
+  console.log('Cordova is ready!');
 
-    // === VIDEO PLAY WITH AUTOPLAY BYPASS ===
-    async function playVideo() {
-      el.loading.classList.remove('active');
-      el.prank.style.display = 'flex';
-      el.video.style.display = 'block';
-      el.video.currentTime = 0;
+  // Initialize status bar if available
+  if (window.StatusBar) {
+    StatusBar.styleDefault();
+  }
 
-      try {
-        // 1. Play muted first (bypass autoplay policy) [[8]][[14]]
-        el.video.muted = true;
-        await el.video.play();
-        
-        // 2. Unmute after 500ms if possible
-        setTimeout(() => {
-          el.video.muted = false;
-          el.video.play().catch(() => {}); // Silent fail if still blocked
-        }, 500);
-      } catch (err) {
-        console.warn('Play failed:', err);
-        // Fallback: stay muted or switch to horror
-        el.video.muted = true;
-        el.video.play().catch(() => {
-          el.horror.classList.remove('hidden');
-          el.prank.classList.add('horror-mode');
-          startChaosAndClose();
-        });
-      }
+  // Hide splash screen immediately if available
+  if (navigator.splashscreen) {
+    navigator.splashscreen.hide();
+  }
 
-      el.video.addEventListener('ended', () => { startChaosAndClose(); }, { once: true });
-      el.video.addEventListener('error', () => {
-        el.horror.classList.remove('hidden');
-        el.prank.classList.add('horror-mode');
-        startChaosAndClose();
-      }, { once: true });
-    }
+  // Initialize database (this will also load saved data)
+  initDB();
 
-    function startChaosAndClose() {
-      if (!active) return;
-      let count = 0;
-      const chaos = setInterval(() => {
-        changeUrl(fakeUrls[Math.floor(Math.random() * fakeUrls.length)]);
-        count++;        if (count >= 8) { clearInterval(chaos); closeTab(); }
-      }, 120);
-    }
+}, false);
 
-    function closeTab() {
-      window.close();
-      try { const w = window.open('', '_self'); if(w) w.close(); } catch(e) {}
-      try { window.location.replace('about:blank'); } catch(e) {}
-      setTimeout(() => {
-        document.documentElement.innerHTML = `
-          <body style="background:#000;color:#f00;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;font-size:1.1rem;text-align:center;padding:20px;overflow:hidden;">
-            <div>
-              <div style="font-size:4rem;margin-bottom:15px;">☠️</div>
-              <div style="font-weight:bold;font-size:1.3rem;">TERLALU LAMBAT BRE...</div>
-              <div style="font-size:0.95rem;color:#999;margin-top:20px;line-height:1.6;">
-                Tab ini udah gak bisa diselamatkan.<br><span style="color:#f66;">Tutup manual aja 😈</span>
-              </div>
-            </div>
-          </body>`;
-      }, 600);
-    }
-
-    // === INIT PRANK (OPTIMIZED) ===
-    async function initPrank(mode) {
-      if (active) return;
-      active = true;
-
-      // ✅ FORCE HIDE BACKGROUND LAYER
-      document.body.classList.add('prank-active');
-
-      // ✅ REQUEST FULLSCREEN IMMEDIATELY (user gesture context) [[18]][[20]]
-      const docEl = document.documentElement;
-      if (docEl.requestFullscreen) await docEl.requestFullscreen().catch(()=>{});
-      else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-      else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
-
-      // ✅ HIDE UI ELEMENTS
-      el.cookie.style.display = 'none';
-      el.overlay.style.display = 'none';
-      el.loading.classList.add('active');
-
-      // ✅ START LOADING SIMULATION
-      simulateLoading();
-      setTimeout(() => changeUrl('/loading/video'), 1200);
-
-      // ✅ HORROR MODE (Decline)
-      if (mode === 'horror') {
-        clearInterval(loadInterval);
-        loadInterval = null;
-        el.loading.classList.remove('active');        el.prank.style.display = 'flex';
-        el.prank.classList.add('horror-mode');
-        el.horror.classList.remove('hidden');
-        startChaosAndClose();
-      }
-    }
-
-    // Events
-    el.accept.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); initPrank('video'); return false; });
-    el.decline.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); initPrank('horror'); return false; });
-
-    document.addEventListener('contextmenu', (e) => { if(active) e.preventDefault(); });
-    document.addEventListener('keydown', (e) => {
-      if (active && ['Escape','F11','F12','Ctrl','Meta','Alt'].includes(e.key)) e.preventDefault();
-    });
-    window.addEventListener('popstate', (e) => {
-      if (active) { e.preventDefault(); window.history.pushState(null, '', window.location.href); }
-    });
-
-    // Init cookie consent
+// Auto-focus to editor on load for immediate typing
+document.addEventListener('DOMContentLoaded', function() {
+  const editorElement = document.getElementById('editor');
+  if (editorElement) {
     setTimeout(() => {
-      el.cookie.style.display = 'flex';
-      el.overlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }, 800);
-  </script>
+      editorElement.focus();
+
+      // Attempt to show keyboard on mobile devices
+      editorElement.click();
+      editorElement.focus();
+    }, 500);
+  }
+});
+</script>
+
+<!-- Sanitizer Script -->
+<script src="script/sanitizer.js"></script>
+
+<!-- Link Handler Script -->
+<script src="script/link-handler.js"></script>
+
+<!-- Preview Handler Script -->
+<script src="script/preview-handler.js"></script>
+
 </body>
 </html>
