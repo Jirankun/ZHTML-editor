@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#282a36">
+<meta name="description" content="Generator kode aktivasi Z HTML — web mini editor untuk Android. Kode berlaku 3 jam dan diverifikasi di sisi aplikasi.">
+<meta property="og:title" content="Z HTML — Kode Aktivasi">
+<meta property="og:description" content="Buat kode aktivasi Z HTML (berlaku 3 jam) dan aktifkan editor di perangkat Android Anda.">
+<meta property="og:image" content="icon.png">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Z HTML — Kode Aktivasi</title>
+<style>
+  :root {
+    --bg: #282a36; --panel: #1e1f29; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #8b93a7; --accent: #ff5722;
+    --green: #50fa7b; --yellow: #ffb86c; --red: #ff5555; --line: #44475a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(1100px 480px at 50% -8%, rgba(255, 87, 34, 0.07), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 16px 48px;
+  }
+
+  header { text-align: center; margin-bottom: 30px; }
+  .logo-img {
+    width: 76px; height: 76px; margin: 0 auto 16px;
+    border-radius: 19px; display: block;
+    box-shadow: 0 8px 28px rgba(255, 87, 34, 0.28), 0 2px 8px rgba(0,0,0,0.5);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .logo-img:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 34px rgba(255, 87, 34, 0.38), 0 3px 10px rgba(0,0,0,0.5);
+  }
+  header h1 { font-size: 23px; color: var(--text); letter-spacing: 0.4px; }
+  .tagline {
+    display: inline-block; margin-top: 9px; padding: 3px 13px;
+    font-size: 10.5px; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--accent); border: 1px solid rgba(255, 87, 34, 0.4);
+    border-radius: 999px; background: rgba(255, 87, 34, 0.08);
+  }
+  header .sub { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+
+  .card {
+    width: 100%; max-width: 460px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  }
+
+  .now-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; font-size: 12.5px; color: var(--muted);
+    background: var(--panel2); border-radius: 8px; padding: 10px 14px;
+    border: 1px solid var(--line);
+  }
+  .now-row b { color: var(--green); font-weight: 600; }
+
+  .btn {
+    width: 100%; margin-top: 16px; padding: 14px; border: none;
+    border-radius: 10px; background: var(--accent); color: #fff;
+    font-family: inherit; font-size: 15px; font-weight: bold;
+    cursor: pointer; transition: transform 0.1s, filter 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:hover { filter: brightness(1.08); }
+
+  .code-box { display: none; margin-top: 18px; }
+  .code-box.show { display: block; animation: fadeUp 0.45s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+  .code {
+    width: 100%; padding: 16px 14px; background: #1b1c26;
+    border: 1px solid var(--line); border-radius: 10px;
+    font-family: inherit; font-size: 15px; letter-spacing: 0.5px;
+    color: var(--yellow); word-break: break-all; user-select: all;
+  }
+
+  .copy-row { display: flex; gap: 8px; margin-top: 10px; }
+  .copy-btn {
+    flex: 1; padding: 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--panel2); color: var(--green); font-family: inherit;
+    font-size: 13px; cursor: pointer; transition: background 0.15s;
+  }
+  .copy-btn:active { background: var(--line); }
+  .copy-btn.done { background: var(--green); color: #111; border-color: var(--green); }
+
+  .meta { margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .meta b { color: var(--text); }
+  .meta .valid { color: var(--green); }
+  .meta .exp { color: var(--red); }
+
+  footer { margin-top: 28px; font-size: 11px; color: var(--muted); text-align: center; line-height: 1.7; max-width: 460px; }
+
+  /* Sentuhan profesional: fokus keyboard & seleksi */
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: rgba(255, 87, 34, 0.4); color: var(--text); }
+
+  @media (max-width: 420px) {
+    body { padding: 26px 12px 38px; }
+    .card { padding: 18px; }
+    .logo-img { width: 64px; height: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img class="logo-img" src="icon.png" alt="Z HTML" width="76" height="76">
+  <h1>Z HTML</h1>
+  <p class="tagline">Generator Kode Aktivasi</p>
+  <p class="sub">Buat kode untuk mengaktifkan aplikasi Z HTML — berlaku 3 jam, diverifikasi di sisi aplikasi.</p>
+</header>
+
+<div class="card">
+  <div class="now-row">
+    <span>Waktu saat ini</span>
+    <b id="nowText">--</b>
+  </div>
+
+  <button class="btn" id="btnGen">Buat Kode</button>
+
+  <div class="code-box" id="codeBox">
+    <div class="label">Kode Aktivasi</div>
+    <div class="code" id="codeText">-</div>
+    <div class="copy-row">
+      <button class="copy-btn" id="btnCopy">Salin Kode</button>
+    </div>
+    <div class="meta" id="metaText"></div>
+  </div>
+</div>
+
+<footer>
+By Zhyllan Fyllah 
+</footer>
+
+<script>
+// ============================================================
+// PENGATURAN — WAJIB SAMA DENGAN ActivationCode.kt di aplikasi!
+// ============================================================
+const SECRET = "ZHTML-EDITOR-RAHASIA-2026"; // kode khusus
+const SPECIAL_CODE = "777";                 // kode khusus 3 digit
+const VALID_HOURS = 3;                      // masa berlaku kode (jam)
+// Mask XOR untuk mengacak timestamp (15 hex pertama SHA-256(SECRET)) —
+// SAMA dengan MASK di ActivationCode.kt (BigInt agar XOR presisi penuh).
+const MASK = BigInt('0x' + sha256(SECRET).slice(0, 15));
+
+// ============================================================
+// SHA-256 murni JavaScript (offline, tanpa library eksternal)
+// Hasilnya identik dengan java.security.MessageDigest di aplikasi.
+// ============================================================
+function sha256(ascii) {
+  function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+  var mathPow = Math.pow, maxWord = mathPow(2, 32), lengthProperty = 'length', i, j;
+  var result = '';
+  var words = [];
+  var asciiBitLength = ascii[lengthProperty] * 8;
+  var hash = (sha256.h = sha256.h || []), k = (sha256.k = sha256.k || []);
+  var primeCounter = k[lengthProperty];
+  var isComposite = {};
+  for (var candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii += '\x80';
+  while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
+  for (i = 0; i < ascii[lengthProperty]; i++) {
+    j = ascii.charCodeAt(i);
+    if (j >> 8) return ''; // hanya ASCII
+    words[i >> 2] |= j << (((3 - i) % 4) * 8);
+  }
+  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+  words[words[lengthProperty]] = (asciiBitLength);
+  for (j = 0; j < words[lengthProperty];) {
+    var w = words.slice(j, j += 16);
+    var oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2];
+      var a = hash[0], e = hash[4];
+      var temp1 = hash[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0);
+      var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+    for (i = 0; i < 8; i++) {
+      hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+  }
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      var b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? 0 : '') + b.toString(16);
+    }
+  }
+  return result;
+}
+
+// ============================================================
+// PENGOLAHAN KODE
+// ============================================================
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatPart(d) {
+  return pad2(d.getDate()) + pad2(d.getMonth() + 1) + d.getFullYear() +
+         pad2(d.getHours()) + pad2(d.getMinutes());
+}
+
+function signature(obf) {
+  return sha256('ZHTML|' + obf + '|' + SPECIAL_CODE + '|' + SECRET).slice(0, 8).toUpperCase();
+}
+
+// Timestamp DDMMYYYYHHMM -> OBF (integer XOR mask, basis-36 huruf besar)
+function obfuscate(part) {
+  const masked = BigInt(part) ^ MASK;
+  return masked.toString(36).toUpperCase();
+}
+
+function generateCode(d) {
+  const part = formatPart(d);
+  const obf = obfuscate(part);
+  return 'ZHTML-' + obf + '-' + SPECIAL_CODE + '-' + signature(obf);
+}
+
+function fmtDateTime(d) {
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  return days[d.getDay()] + ', ' + pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' +
+         d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+}
+
+// Durasi (ms) -> "3 hari 2 jam 5 menit" / "2 jam 5 menit 30 detik" / "5 menit 3 detik" / "12 detik"
+function formatDuration(ms) {
+  if (ms <= 0) return '0 detik';
+  const s = Math.floor(ms / 1000);
+  const days = Math.floor(s / 86400);
+  const hours = Math.floor((s % 86400) / 3600);
+  const minutes = Math.floor((s % 3600) / 60);
+  const seconds = s % 60;
+  if (days >= 1) {
+    const parts = [days + ' hari'];
+    if (hours > 0) parts.push(hours + ' jam');
+    if (minutes > 0) parts.push(minutes + ' menit');
+    return parts.join(' ');
+  }
+  if (hours > 0) return hours + ' jam ' + minutes + ' menit ' + seconds + ' detik';
+  if (minutes > 0) return minutes + ' menit ' + seconds + ' detik';
+  return seconds + ' detik';
+}
+
+// ============================================================
+// UI
+// ============================================================
+const nowText = document.getElementById('nowText');
+const codeBox = document.getElementById('codeBox');
+const codeText = document.getElementById('codeText');
+const metaText = document.getElementById('metaText');
+const btnCopy = document.getElementById('btnCopy');
+let expiresAt = null; // timestamp kedaluwarsa kode terakhir
+
+function updateCountdown() {
+  if (!expiresAt) return;
+  const remain = expiresAt - Date.now();
+  const el = document.getElementById('countText');
+  if (!el) return;
+  if (remain > 0) {
+    el.className = 'valid';
+    el.textContent = formatDuration(remain);
+  } else {
+    el.className = 'exp';
+    el.textContent = 'sudah kedaluwarsa';
+  }
+}
+
+function tickClock() {
+  nowText.textContent = fmtDateTime(new Date());
+}
+tickClock();
+setInterval(tickClock, 30 * 1000);
+setInterval(updateCountdown, 1000);
+
+document.getElementById('btnGen').addEventListener('click', function () {
+  const now = new Date();
+  const code = generateCode(now);
+  const expires = new Date(now.getTime() + VALID_HOURS * 3600 * 1000);
+  expiresAt = expires.getTime();
+
+  codeText.textContent = code;
+  metaText.innerHTML =
+    '<div>Dibuat : <b>' + fmtDateTime(now) + '</b></div>' +
+    '<div>Berlaku sampai : <b class="exp">' + fmtDateTime(expires) + '</b></div>' +
+    '<div>Sisa waktu : <b class="valid" id="countText">' + formatDuration(expiresAt - now.getTime()) + '</b></div>' +
+    '<div>Masukkan kode ini di aplikasi Z HTML → layar "Aktifkan editor anda".</div>';
+  updateCountdown();
+
+  codeBox.classList.remove('show');
+  void codeBox.offsetWidth; // restart animasi
+  codeBox.classList.add('show');
+
+  btnCopy.textContent = 'Salin Kode';
+  btnCopy.classList.remove('done');
+});
+
+btnCopy.addEventListener('click', function () {
+  const code = codeText.textContent;
+  const ok = function () {
+    btnCopy.textContent = 'Tersalin!';
+    btnCopy.classList.add('done');
+    setTimeout(function () { btnCopy.textContent = 'Salin Kode'; btnCopy.classList.remove('done'); }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(ok).catch(function () { fallbackCopy(code); ok(); });
+  } else {
+    fallbackCopy(code); ok();
+  }
+});
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>
